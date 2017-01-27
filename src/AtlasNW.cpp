@@ -37,19 +37,108 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // STATIC MEMBERS OF CLASS, SO ACCESSIBLE ANYWHERE //
 /////////////////////////////////////////////////////
 
-char* measurement_type;
+// Define numbers to represent different sensor types
+const uint8_t conductivity = 1;
+const uint8_t pH = 2;
+const uint8_t ORP = 3;
+const uint8_t DO = 4;
+const uint8_t flow = 5;
+const uint8_t temperature = 6;
+const uint8_t color = 7;
+
+// Define numbers to represent different communications types
+const uint8_t use_UART = 1;
+const uint8_t use_SoftSerial = 2;
+const uint8_t use_I2C = 3;
+
+// Global variables to hold information
+uint8_t measurement_type;
+uint8_t communications_type;
+
+// If some kind of serial communication
+// Defaults to the standard baud rate for the newer Atlas devices
+// This should be redundant with the constructor
+uint32_t baudRate=9600;
+
+// If multiple UARTs
+uint8_t UART_number;
+
+// If software serial
 uint8_t softSerRX;
 uint8_t softSerTX;
-uint32_t baudRate;
+
+// If I2C, save address
+uint8_t I2C_address;
 
 /////////////////
 // CONSTRUCTOR //
 /////////////////
 
-AtlasNW::AtlasNW(char* measurement_type, uint8_t softSerRX, uint8_t softSerTX, \
-                 uint32_t baudRate){
+// Overload constructor for different communications types
+
+// Two options (ambiguous, so handle in one function):
+// Hardware serial: char* char* uint8_t OPTuint32_t
+// I2C: char* char* uint8_t
+AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UART_number__I2C_address, uint32_t baudRate){
+  if(strcmp(_measurement_type, "conductivity") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "pH") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "ORP") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "DO") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "flow") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "temperature") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "color") == 0){
+    measurement_type = conductivity;
+  };
+  else{
+    Serial.println("No valid sensor chosen. Halting.");
+    while(1){};
+    // Possibly add warning LED here
+  }
+  
+  if(strcmp(_communications_type, "UART") == 0){
+    measurement_type = use_UART;
+    Atlas_UART()
+  };
+  else if(strcmp(_measurement_type, "SoftSerial") == 0){
+    measurement_type = use_SoftSerial;
+    comms = AtlasNW::SoftSerial()
+  };
+  else if(strcmp(_measurement_type, "I2C") == 0){
+    measurement_type = use_I2C;
+    comms = AtlasNW::Atlas_SoftSerial()
+  };
+  else{
+    Serial.println("No valid measurement type chosen. Halting.");
+    while(1){};
+    // Possibly add warning LED here
+  }
+}
+
+// Software serial: char* char* uint8_t uint8_t OPTuint32_t
+AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t _softSerRX, uint8_t _softSerTX, uint32_t _baudRate){
   //if(strcmp(str1, str2) == 0){};
 }
+
+AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t I2C_address){
+  //if(strcmp(str1, str2) == 0){};
+}
+
+void initialize(UART_number__I2C_address
+
+void initialize(UART_number__I2C_address
+
 
 //////////////////////
 // MEMBER FUNCTIONS //
