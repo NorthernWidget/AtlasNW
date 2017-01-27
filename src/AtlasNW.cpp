@@ -37,13 +37,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // STATIC MEMBERS OF CLASS, SO ACCESSIBLE ANYWHERE //
 /////////////////////////////////////////////////////
 
-//... crickets
+char* measurement_type;
+uint8_t softSerRX;
+uint8_t softSerTX;
+uint32_t baudRate;
 
 /////////////////
 // CONSTRUCTOR //
 /////////////////
 
-AtlasNW::AtlasNW(){}
+AtlasNW::AtlasNW(char* measurement_type, uint8_t softSerRX, uint8_t softSerTX, \
+                 uint32_t baudRate){
+  //if(strcmp(str1, str2) == 0){};
+}
 
 //////////////////////
 // MEMBER FUNCTIONS //
