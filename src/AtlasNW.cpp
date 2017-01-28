@@ -109,15 +109,20 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UA
   
   if(strcmp(_communications_type, "UART") == 0){
     measurement_type = use_UART;
-    Atlas_UART()
+    //Atlas_UART comms;
   };
   else if(strcmp(_measurement_type, "SoftSerial") == 0){
     measurement_type = use_SoftSerial;
-    comms = AtlasNW::SoftSerial()
+    SoftwareSerial mySerial (softSerRX, softSerTX);
+    //SoftSerial comms;
+    
   };
   else if(strcmp(_measurement_type, "I2C") == 0){
     measurement_type = use_I2C;
-    comms = AtlasNW::Atlas_SoftSerial()
+    //Atlas_SoftSerial comms;
+    Wire.begin(); // Concerns about loading this more than once in different
+                  // libraries. See:
+                  // https://github.com/esp8266/Arduino/issues/2607
   };
   else{
     Serial.println("No valid measurement type chosen. Halting.");
@@ -135,18 +140,223 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t I2
   //if(strcmp(str1, str2) == 0){};
 }
 
-void initialize(UART_number__I2C_address
+//////////////////
+// SENDING DATA //
+//////////////////
 
-void initialize(UART_number__I2C_address
+void I2C_write(char* _transmission, _transmission_length){
+  Wire.beginTransmission(I2C_address);
+  Wire.write(_transmission, _transmission_length);
+  Wire.write('\r');
+  Wire.endTransmission();
+}
 
+// What if Serial is already being used?
+void Serial_write(char* _transmission){
+  Serial.begin(baudRate);
+  Serial.print(_transmission);
+  Serial.print('\r');
+  Serial.end();
+}
+
+// Just use software serial for now, to get the ball rolling in time
+// to go to the field
+void SoftSer_write(char* _transmission){
+  mySerial.begin(baudRate);
+  mySerial.print(_transmission);
+  mySerial.print('\r');
+  mySerial.end();
+}
+
+////////////////////
+// RECEIVING DATA //
+////////////////////
+
+
+
+///////////////////////
+// SPECIFIC COMMANDS //
+///////////////////////
+
+// Hard-code for software serial for now
+
+void LED_on(bool _state){
+  /*
+   TRUE for LED on
+   FALSE for LED off
+   */
+  char* _transmission;
+  uint8_t response_byte;
+  mySerial.begin(baudRate);
+  mySerial.print("L,");
+  mySerial.print(_state);
+  mySerial.print("\r");
+  // dump the response
+  while mySerial.available(){
+    response_byte = mySerial.read();
+  }
+  mySerial.end();
+}
+
+void response_code_on(bool _state){
+  /*
+   TRUE for response code (*OK) on
+   FALSE for *OK off
+   */
+  char* _transmission;
+  uint8_t response_byte;
+  mySerial.begin(baudRate);
+  mySerial.print("RESPONSE,");
+  mySerial.print(_state);
+  mySerial.print("\r");
+  // dump the response
+  while mySerial.available(){
+    response_byte = mySerial.read();
+  }
+  mySerial.end();
+}
+
+void continuous_readings_on(bool _state){
+  /*
+   TRUE for ON, false for OFF
+   */
+  char* _transmission;
+  uint8_t response_byte;
+  mySerial.begin(baudRate);
+  mySerial.print("C,");
+  mySerial.print(_state);
+  mySerial.print("\r");
+  // dump the response
+  while mySerial.available(){
+    response_byte = mySerial.read();
+  }
+  mySerial.end();
+}
+
+void set_K_constant(float K){
+  /*
+   For conductivity
+   */
+  char* _transmission;
+  uint8_t response_byte;
+  mySerial.begin(baudRate);
+  mySerial.print("K,");
+  mySerial.print(K);
+  mySerial.print("\r");
+  // dump the response
+  while mySerial.available(){
+    response_byte = mySerial.read();
+  }
+  mySerial.end();
+}
+
+void set_Temperature(float T){
+  /*
+   For temperature calibration of EC
+   */
+  char* _transmission;
+  uint8_t response_byte;
+  mySerial.begin(baudRate);
+  mySerial.print("T,");
+  mySerial.print(T);
+  mySerial.print("\r");
+  // Time to process
+  delay(300);
+  // dump the response
+  while mySerial.available(){
+    response_byte = mySerial.read();
+  }
+  mySerial.end();
+}
+
+void calibrate();
+  /*
+   Two-point calibration: low
+   */
+  char* _transmission;
+  mySerial.begin(baudRate);
+  Serial.end();
+  Serial.begin(38400); // hard-coded for now
+  Serial.println("Clearing calibration data");
+  mySerial.print("Cal,clear\r");
+  // dump the response
+  while mySerial.available(){
+    response_byte = mySerial.read();
+  }
+  Serial.println("Now dry the probe.");
+  Serial.println("Enter any character and press <ENTER> when ready")
+  Serial.println("to perform the dry calibration.");
+  while(!Serial.available()); // Wait for input from user
+  mySerial.print("Cal,dry\r");
+  Serial.println("Now place the probe in the low-conductivity solution.");
+  Serial.println("Enter the E.C. value [uS] of the solution and press <ENTER>");
+  Serial.println("to begin low-point calibration");
+  while(!Serial.available()); // Wait for input from user
+  mySerial.print("Cal,low,");
+  while Serial.available(){
+    mySerial.print(Serial.read());
+  }
+  mySerial.print("\r")
+  // dump the response
+  while mySerial.available(){
+    response_byte = mySerial.read();
+  }
+  Serial.println("Low-point calibration done.");
+  Serial.println("Remove the probe from the low-conductivity solution.");
+  Serial.println("Cap the low-conductivity solution.");
+  Serial.println("Dry the probe.");
+  Serial.println("Then place the probe in the high-conductivity solution.");
+  Serial.println("Enter the E.C. value [uS] of the solution and press <ENTER>");
+  Serial.println("to begin high-point calibration");
+  while(!Serial.available()); // Wait for input from user
+  mySerial.print("Cal,high,");
+  while Serial.available(){
+    mySerial.print(Serial.read());
+  }
+  mySerial.print("\r")
+  // dump the response
+  while mySerial.available(){
+    response_byte = mySerial.read();
+  }
+  mySerial.end();
+  Serial.println("Calibration complete.");
+  Serial.end();
+}
+
+char* read(bool _state){
+  /*
+   Read sensor
+   */
+  char* _transmission;
+  char _tmpchar;
+  char* response;
+  mySerial.begin(baudRate);
+  mySerial.print("R\n");
+  // Record the response
+  // Dump response code
+  while mySerial.available(){
+    _tmpchar = mySerial.read();
+  }
+  // But record actual response
+  delay(1000);
+  int i = 0;
+  while mySerial.available(){
+    _tmpchar = mySerial.read();
+    // Don't write the carriage return
+    while (_tmpchar != "\r"){
+      response[i] = mySerial.read();
+      i++;
+    }
+    //Dump any characters after carriage return
+    _tmpchar = mySerial.read();
+  }
+  mySerial.end();
+}
 
 //////////////////////
 // MEMBER FUNCTIONS //
 //////////////////////
 
-void Logger::AtlasScientific_SoftwareSerial(char* command, int softSerRX, \
-               int softSerTX, uint32_t baudRate, bool printReturn, \
-               bool saveReturn){
   /**
    * @brief 
    * Atlas Scientific sensors: water properties and chemistry.
@@ -184,203 +394,4 @@ void Logger::AtlasScientific_SoftwareSerial(char* command, int softSerRX, \
    * ```
    * 
    */
-
-  // Serial Number is from an old version of the code
-  // SerialNumber and baudRate default to 0 and 38400, respectively.
-  // SerialNumber could be changed for Arduino Mega.
-
-  // Check if re-instantiating class causes problems -- maybe this is what 
-  // happened with Nick's loggers (but then why different times before
-  // failure?
-  // Same name, so maybe overwrite memory in same place?
-  // Also, general timing issues with software serial; consider using 
-  // hardware serial for this function.
-  SoftwareSerial mySerial(softSerRX, softSerTX);
-
-  mySerial.begin(baudRate);
-  //Serial2.println("L,0\r");
-  
-  /*
-  // HARDWARE SERIAL
-  uint32_t start_millis_clear_buffer = millis();
-  Serial2.write(13); // Clear buffer -- carriage return
-  while ( (millis() - start_millis_clear_buffer < 500) || Serial2.available() ){
-    Serial2.read();
-  }
-  */
-
-  String sensorString = ""; // a char array to hold the data from the Atlas Scientific product
-                         // Atlas' example indicates that they expect all returns to be <= 30 bytes
-  sensorString.reserve(30); // Sets aside memory for the Sring
-  char inChar; // incoming characters on the serial port
-
-  // "println" prints <values>\r\n. Atlas uses println to send data in its 
-  // Arduino sample code, so I presume the "\r" is taken as the cutoff (its 
-  // sensors terminate with a carriage return) and the "\n" is discarded.
-  // Still, I wonder if it would be better to "Serial.print(...\n);"
-  // (or ASCII 13, however Arduino does it) explicitly
-  mySerial.print(command); // send the command to the Atlas Scientific product
-  mySerial.write(13); // carriage return to signal the end of the command
-  
-  mySerial.flush(); // Wait for transmit to finish
-  
-  delay(100);
-
-  // Safety guard in case all data not received -- won't hang for > t_timeout
-  // milliseconds
-  int t_timeout = 5000;
-  uint32_t start_millis = millis();
-  bool endflag = false;
-  
-  // t_timeout just to ensure that there is no hang if signal isn't good
-  while ((millis() - start_millis < t_timeout) && !endflag){
-    if (mySerial.available()){
-      inChar = mySerial.read();
-      // Serial.print(inChar); // uncomment for debugging input from sensor
-      if (inChar != '\r'){
-        sensorString += inChar;
-      }
-      else{
-        endflag = true;
-      }
-    }
-  }
-  if (saveReturn){
-    datafile.print(sensorString); // Should work without clock's CSpinRTC -- digging into object that is already made
-    datafile.print(F(","));
-  }
-  // Echo to serial
-  if (saveReturn || printReturn){
-    Serial.print(sensorString);
-    Serial.print(F(","));
-  }
-
-  // Get rid of the incoming Serial stream
-  while( mySerial.read() != -1 );
-
-  mySerial.end();
-
-}
-
-/*
-void Logger::AtlasScientific_LEDtest(){
-  Serial.begin(38400);
-  Serial.write(13); // Clear buffer -- carriage return
-  Serial.print("L,1");
-  Serial.write(13);
-  Serial.end();
-}
-
-void Logger::AtlasScientific_test(char* command){
-  Serial.begin(38400);
-  Serial.write(13); // Clear buffer -- carriage return
-  Serial.print(command);
-  Serial.write(13);
-  Serial.end();
-}
-*/
-
-void Logger::AtlasScientific_UART(char* command, int SerialNumber, 
-                        uint32_t baudRate, bool printReturn, bool saveReturn){
-  // * "command" is the command sent to the Atlas Scientific product.
-  //   see the data sheet as well as the above quick lists
-  // SerialNumber and baudRate default to 0 and 38400, respectively.
-  // SerialNumber could be changed for Arduino Mega.
-  // baudRate will stay constant insofar as Atlas sensors' baud rates do.
-  // getReturn determines whether you care about the Serial response, or whether
-  // you would just like to clear the buffer.
-  //
-
-  Serial.begin(baudRate);
-
-  String sensorString = ""; // a char array to hold the data from the Atlas Scientific product
-                         // Atlas' example indicates that they expect all returns to be <= 30 bytes
-  sensorString.reserve(30); // Sets aside memory for the Sring
-  char inChar; // incoming characters on the serial port
-
-  // "println" prints <values>\r\n. Atlas uses println to send data in its 
-  // Arduino sample code, so I presume the "\r" is taken as the cutoff (its 
-  // sensors terminate with a carriage return) and the "\n" is discarded.
-  // Still, I wonder if it would be better to "Serial.print(...\n);"
-  // (or ASCII 13, however Arduino does it) explicitly
-  Serial.print(command); // send the command to the Atlas Scientific product
-  Serial.write(13); // carriage return to signal the end of the command
-  
-  Serial.flush(); // Wait for transmit to finish
-  
-  delay(100);
-
-  //delay();
-  
-  // Safety guard in case all data not received -- won't hang for > 30 seconds
-  uint32_t start_millis = millis();
-  
-  bool endflag = false;
-  
-  // "5000" just to ensure that there is no hang if signal isn't good
-  while ((millis() - start_millis < 5000) && !endflag){
-    // used to have if (printReturn || saveReturn) here, but
-    // should read return either way
-    if (Serial.available()){
-      inChar = Serial.read();
-      // Serial.print(inChar); // uncomment for debugging input from sensor
-      if (inChar != '\r'){
-        //sensorString[i] = inChar;
-        sensorString += inChar;
-      }
-      else{
-        endflag = true;
-      }
-    }
-  }
-  // save iff both getReturn and saveReturn are true
-  // Currently also echoes the return to serial port if it will
-  // also be saved (sent to SD card)
-  if (saveReturn){
-    SDstart();
-    // Should work without clock's CSpinRTC -- digging into object that is
-    // already made
-    datafile.print(sensorString);
-    datafile.print(",");
-    SDend();
-  }
-  // Echo to serial
-  if (saveReturn || printReturn){
-    Serial.print(sensorString);
-    Serial.print(F(","));
-  }
-  /*
-  else if (printReturn){ // so !savereturn
-    Serial.println();
-    Serial.print("Sensor returns: ");
-    Serial.println(sensorString);
-    Serial.println();
-  }
-  */
-  
-  // Get rid of the incoming Serial stream
-  // get rid of the rest of the buffer after Line 1
-  //while (_tx_buffer->head != _tx_buffer->tail);
-  while( Serial.read() != -1 );
-
-  Serial.end();
-
-}
-
-float Logger::AtlasScientific__setLED(bool on, bool use_UART, bool use_software_serial){
-  if (use_UART){
-    if(on){
-      if (use_software_serial){
-        
-        Serial.print("\r");
-      }
-      else{
-        Serial.print("L,1");
-        Serial.print("\r");
-      }
-    }
-  }
-  else if 
-
-}
 
