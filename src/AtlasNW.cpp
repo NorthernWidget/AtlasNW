@@ -80,6 +80,8 @@ uint8_t I2C_address;
 // Hardware serial: char* char* uint8_t OPTuint32_t
 // I2C: char* char* uint8_t
 AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UART_number__I2C_address, uint32_t baudRate){
+  Serial.end();
+  Serial.begin(38400); // hard-coded for now
   if(strcmp(_measurement_type, "conductivity") == 0){
     measurement_type = conductivity;
   };
@@ -108,17 +110,17 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UA
   }
   
   if(strcmp(_communications_type, "UART") == 0){
-    measurement_type = use_UART;
+    communications_type = use_UART;
     //Atlas_UART comms;
   };
   else if(strcmp(_measurement_type, "SoftSerial") == 0){
-    measurement_type = use_SoftSerial;
+    communications_type = use_SoftSerial;
     SoftwareSerial mySerial (softSerRX, softSerTX);
     //SoftSerial comms;
     
   };
   else if(strcmp(_measurement_type, "I2C") == 0){
-    measurement_type = use_I2C;
+    communications_type = use_I2C;
     //Atlas_SoftSerial comms;
     Wire.begin(); // Concerns about loading this more than once in different
                   // libraries. See:
@@ -133,18 +135,72 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UA
 
 // Software serial: char* char* uint8_t uint8_t OPTuint32_t
 AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t _softSerRX, uint8_t _softSerTX, uint32_t _baudRate){
-  //if(strcmp(str1, str2) == 0){};
+  Serial.end();
+  Serial.begin(38400); // hard-coded for now
+  if(strcmp(_measurement_type, "conductivity") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "pH") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "ORP") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "DO") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "flow") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "temperature") == 0){
+    measurement_type = conductivity;
+  };
+  else if(strcmp(_measurement_type, "color") == 0){
+    measurement_type = conductivity;
+  };
+  else{
+    Serial.println("No valid sensor chosen. Halting.");
+    while(1){};
+    // Possibly add warning LED here
+  }
+  
+  if(strcmp(_communications_type, "UART") == 0){
+    communications_type = use_UART;
+    //Atlas_UART comms;
+  };
+  else if(strcmp(_measurement_type, "SoftSerial") == 0){
+    communications_type = use_SoftSerial;
+    softSerRX = _softSerRX;
+    softSerTX = _softSerTX;
+    SoftwareSerial mySerial (softSerRX, softSerTX);
+    //SoftSerial comms;
+    
+  };
+  else if(strcmp(_measurement_type, "I2C") == 0){
+    communications_type = use_I2C;
+    //Atlas_SoftSerial comms;
+    Wire.begin(); // Concerns about loading this more than once in different
+                  // libraries. See:
+                  // https://github.com/esp8266/Arduino/issues/2607
+  };
+  else{
+    Serial.println("No valid measurement type chosen. Halting.");
+    while(1){};
+    // Possibly add warning LED here
+  }
 }
 
+/*
 AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t I2C_address){
   //if(strcmp(str1, str2) == 0){};
 }
+*/
 
 //////////////////
 // SENDING DATA //
 //////////////////
 
-void I2C_write(char* _transmission, _transmission_length){
+void AtlasNW::I2C_write(char* _transmission, _transmission_length){
   Wire.beginTransmission(I2C_address);
   Wire.write(_transmission, _transmission_length);
   Wire.write('\r');
@@ -152,7 +208,7 @@ void I2C_write(char* _transmission, _transmission_length){
 }
 
 // What if Serial is already being used?
-void Serial_write(char* _transmission){
+void AtlasNW::Serial_write(char* _transmission){
   Serial.begin(baudRate);
   Serial.print(_transmission);
   Serial.print('\r');
@@ -161,7 +217,7 @@ void Serial_write(char* _transmission){
 
 // Just use software serial for now, to get the ball rolling in time
 // to go to the field
-void SoftSer_write(char* _transmission){
+void AtlasNW::SoftSer_write(char* _transmission){
   mySerial.begin(baudRate);
   mySerial.print(_transmission);
   mySerial.print('\r');
@@ -180,7 +236,7 @@ void SoftSer_write(char* _transmission){
 
 // Hard-code for software serial for now
 
-void LED_on(bool _state){
+void AtlasNW::LED_on(bool _state){
   /*
    TRUE for LED on
    FALSE for LED off
@@ -198,7 +254,7 @@ void LED_on(bool _state){
   mySerial.end();
 }
 
-void response_code_on(bool _state){
+void AtlasNW::response_code_on(bool _state){
   /*
    TRUE for response code (*OK) on
    FALSE for *OK off
@@ -216,7 +272,7 @@ void response_code_on(bool _state){
   mySerial.end();
 }
 
-void continuous_readings_on(bool _state){
+void AtlasNW::continuous_readings_on(bool _state){
   /*
    TRUE for ON, false for OFF
    */
@@ -233,7 +289,7 @@ void continuous_readings_on(bool _state){
   mySerial.end();
 }
 
-void set_K_constant(float K){
+void AtlasNW::set_K_constant(float K){
   /*
    For conductivity
    */
@@ -250,7 +306,7 @@ void set_K_constant(float K){
   mySerial.end();
 }
 
-void set_Temperature(float T){
+void AtlasNW::set_Temperature(float T){
   /*
    For temperature calibration of EC
    */
@@ -269,14 +325,12 @@ void set_Temperature(float T){
   mySerial.end();
 }
 
-void calibrate();
+void AtlasNW::calibrate();
   /*
    Two-point calibration: low
    */
   char* _transmission;
   mySerial.begin(baudRate);
-  Serial.end();
-  Serial.begin(38400); // hard-coded for now
   Serial.println("Clearing calibration data");
   mySerial.print("Cal,clear\r");
   // dump the response
@@ -320,10 +374,9 @@ void calibrate();
   }
   mySerial.end();
   Serial.println("Calibration complete.");
-  Serial.end();
 }
 
-char* read(bool _state){
+char* AtlasNW::read(bool _state){
   /*
    Read sensor
    */
@@ -351,6 +404,7 @@ char* read(bool _state){
     _tmpchar = mySerial.read();
   }
   mySerial.end();
+  return response;
 }
 
 //////////////////////
