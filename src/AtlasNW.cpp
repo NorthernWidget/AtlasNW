@@ -85,7 +85,7 @@ uint8_t I2C_address;
 // Hardware serial: char* char* uint8_t OPTuint32_t
 // I2C: char* char* uint8_t
 AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UART_number__I2C_address, uint32_t baudRate){
-  Serial.end();
+  //Serial.end();
   Serial.begin(38400); // hard-coded for now
   if(strcmp(_measurement_type, "conductivity") == 0){
     measurement_type = conductivity;
@@ -110,6 +110,7 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UA
   }
   else{
     Serial.println("No valid sensor chosen. Halting.");
+    delay(10);
     while(1){};
     // Possibly add warning LED here
   }
@@ -133,6 +134,7 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UA
   }
   else{
     Serial.println("No valid measurement type chosen. Halting.");
+    delay(10);
     while(1){}
     // Possibly add warning LED here
   }
@@ -141,9 +143,19 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UA
 
 // Software serial: char* char* uint8_t uint8_t OPTuint32_t
 AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t _softSerRX, uint8_t _softSerTX, uint32_t _baudRate){
+  Serial.begin(38400); // hard-coded for now
+  softSerRX = _softSerRX;
+  softSerTX = _softSerTX;
+  baudRate = _baudRate;
+  measurement_type = conductivity;
+  communications_type = use_SoftSerial;
+  /*
   Serial.end();
   Serial.begin(38400); // hard-coded for now
   if(strcmp(_measurement_type, "conductivity") == 0){
+    Serial.println(F("HOORAY!"));
+    delay(200);
+    Serial.println(F("HOORAY!"));
     measurement_type = conductivity;
   }
   else if(strcmp(_measurement_type, "pH") == 0){
@@ -166,6 +178,7 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t _s
   }
   else{
     Serial.println("No valid sensor chosen. Halting.");
+    delay(10);
     while(1){}
     // Possibly add warning LED here
   }
@@ -190,11 +203,13 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t _s
   }
   else{
     Serial.println("No valid measurement type chosen. Halting.");
+    delay(10);
     while(1){}
     // Possibly add warning LED here
   }
   //
   //mySerial(softSerRX, softSerTX);
+  */
 
 }
 
@@ -252,16 +267,25 @@ void AtlasNW::LED_on(bool _state){
    */
   char* _transmission;
   uint8_t response_byte;
+  Serial.begin(38400);
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
+  Serial.print(softSerRX);
+  Serial.print(softSerTX);
+  Serial.print(baudRate);
+  Serial.println();
   mySerial.print("L,");
   mySerial.print(_state);
   mySerial.print("\r");
-  // dump the response
+  // Return the response
+  Serial.println("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    Serial.print(response_byte);
   }
+  Serial.println();
   mySerial.end();
+  Serial.end();
 }
 
 void AtlasNW::response_code_on(bool _state){
@@ -276,10 +300,13 @@ void AtlasNW::response_code_on(bool _state){
   mySerial.print("RESPONSE,");
   mySerial.print(_state);
   mySerial.print("\r");
-  // dump the response
+  // Return the response
+  Serial.println("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    Serial.print(response_byte);
   }
+  Serial.println();
   mySerial.end();
 }
 
@@ -312,10 +339,13 @@ void AtlasNW::set_K_constant(float K){
   mySerial.print("K,");
   mySerial.print(K);
   mySerial.print("\r");
-  // dump the response
+  // Return the response
+  Serial.println("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    Serial.print(response_byte);
   }
+  Serial.println();
   mySerial.end();
 }
 
@@ -332,10 +362,13 @@ void AtlasNW::set_Temperature(float T){
   mySerial.print("\r");
   // Time to process
   delay(300);
-  // dump the response
+  // Return the response
+  Serial.println("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    Serial.print(response_byte);
   }
+  Serial.println();
   mySerial.end();
 }
 
@@ -343,33 +376,56 @@ void AtlasNW::calibrate(){
   /*
    Two-point calibration: low
    */
+  Serial.begin(38400); // hard-coded for now -- and for some reason needed in every function
   char* _transmission;
-  uint8_t response_byte;
+  char response_byte;
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
-  Serial.println("Clearing calibration data");
+  Serial.println("Clearing calibration data.");
+  Serial.println();
   mySerial.print("Cal,clear\r");
-  // dump the response
+  // Return the response
+  Serial.println("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    Serial.print(response_byte);
   }
+  Serial.println();
   Serial.println("Now dry the probe.");
   Serial.println("Enter any character and press <ENTER> when ready");
   Serial.println("to perform the dry calibration.");
   while(!Serial.available()); // Wait for input from user
+  // Then dump that input
+  while (Serial.available()){
+    response_byte = Serial.read();
+  }
+  Serial.println();
   mySerial.print("Cal,dry\r");
   Serial.println("Now place the probe in the low-conductivity solution.");
   Serial.println("Enter the E.C. value [uS] of the solution and press <ENTER>");
   Serial.println("to begin low-point calibration");
   while(!Serial.available()); // Wait for input from user
   mySerial.print("Cal,low,");
+  Serial.println();
+  Serial.print("Calibration value = ");
   while (Serial.available()){
-    mySerial.print(Serial.read());
+    response_byte = Serial.read();
+    Serial.print(response_byte);
+    mySerial.print(response_byte);
   }
   mySerial.print("\r");
-  // dump the response
+  Serial.println();
+  Serial.println();
+  // Return the response
+  Serial.println("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    Serial.print(response_byte);
+  }
+  Serial.println();
+  // Then dump any remaining input
+  while (Serial.available()){
+    response_byte = Serial.read();
   }
   Serial.println("Low-point calibration done.");
   Serial.println("Remove the probe from the low-conductivity solution.");
@@ -381,13 +437,25 @@ void AtlasNW::calibrate(){
   while(!Serial.available()); // Wait for input from user
   mySerial.print("Cal,high,");
   while (Serial.available()){
-    mySerial.print(Serial.read());
+    response_byte = Serial.read();
+    Serial.print(response_byte);
+    mySerial.print(response_byte);
   }
   mySerial.print("\r");
-  // dump the response
+  Serial.println();
+  Serial.println();
+  // Return the response
+  Serial.println("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    Serial.print(response_byte);
   }
+  Serial.println();
+  // Then dump any remaining input
+  while (Serial.available()){
+    response_byte = Serial.read();
+  }
+  // Finally, close down communications
   mySerial.end();
   Serial.println("Calibration complete.");
 }
