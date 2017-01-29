@@ -26,6 +26,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/////////////////////////////////
+// DEFINE SELF / INCLUDE GUARD //
+/////////////////////////////////
+
+#ifndef Logger_h
+#define Logger_h
+
+///////////////////////
+// INCLUDE LIBRARIES //
+///////////////////////
+
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <Wire.h>
@@ -38,7 +49,7 @@ class AtlasNW {
     AtlasNW(char* _measurement_type, char* _communications_type, uint8_t _softSerRX, uint8_t _softSerTX, uint32_t _baudRate=9600);
     
     // Functions
-    void AtlasNW::I2C_write(char* _transmission, _transmission_length);
+    void AtlasNW::I2C_write(char* _transmission, uint8_t _transmission_length);
     void AtlasNW::Serial_write(char* _transmission);
     void AtlasNW::SoftSer_write(char* _transmission);
     void AtlasNW::LED_on(bool _state);
@@ -49,4 +60,7 @@ class AtlasNW {
     void AtlasNW::calibrate();
     char* AtlasNW::read(bool _state);
     
-}
+};
+
+// End include guard
+#endif
