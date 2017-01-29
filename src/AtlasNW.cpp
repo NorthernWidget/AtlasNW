@@ -120,14 +120,14 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UA
   }
   else if(strcmp(_measurement_type, "SoftSerial") == 0){
     communications_type = use_SoftSerial;
-    SoftwareSerial mySerial(softSerRX, softSerTX);
+    //SoftwareSerial mySerial(softSerRX, softSerTX);
     //SoftSerial comms; 
     
   }
   else if(strcmp(_measurement_type, "I2C") == 0){
     communications_type = use_I2C;
     //Atlas_SoftSerial comms;
-    Wire.begin(); // Concerns about loading this more than once in different
+    //Wire.begin(); // Concerns about loading this more than once in different
                   // libraries. See:
                   // https://github.com/esp8266/Arduino/issues/2607
   }
@@ -176,15 +176,15 @@ AtlasNW::AtlasNW(char* _measurement_type, char* _communications_type, uint8_t _s
   }
   else if(strcmp(_measurement_type, "SoftSerial") == 0){
     communications_type = use_SoftSerial;
-    softSerRX = _softSerRX;
-    softSerTX = _softSerTX;
-    SoftwareSerial mySerial(softSerRX, softSerTX);
+    //softSerRX = _softSerRX;
+    //softSerTX = _softSerTX;
+    //SoftwareSerial mySerial(softSerRX, softSerTX);
     //SoftSerial comms; 
   }
   else if(strcmp(_measurement_type, "I2C") == 0){
     communications_type = use_I2C;
     //Atlas_SoftSerial comms;
-    Wire.begin(); // Concerns about loading this more than once in different
+    //Wire.begin(); // Concerns about loading this more than once in different
                   // libraries. See:
                   // https://github.com/esp8266/Arduino/issues/2607
   }
