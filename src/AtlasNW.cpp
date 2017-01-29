@@ -266,7 +266,7 @@ void AtlasNW::LED_on(bool _state){
    FALSE for LED off
    */
   char* _transmission;
-  uint8_t response_byte;
+  char response_byte;
   Serial.begin(38400);
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
@@ -332,21 +332,45 @@ void AtlasNW::set_K_constant(float K){
   /*
    For conductivity
    */
-  char* _transmission;
-  uint8_t response_byte;
+  char response_byte;
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
+  // Clear prior chit chat
+  mySerial.print('\r');
+  delay(50);
+  while (mySerial.available()){
+    response_byte = mySerial.read();
+  }
+  Serial.begin(38400);
+  delay(100);
+  Serial.print("Conductivity value to be set to: ");
+  Serial.println(K);
   mySerial.print("K,");
   mySerial.print(K);
-  mySerial.print("\r");
+  mySerial.print('\r');
   // Return the response
-  Serial.println("Sensor says: ");
+  Serial.print("Sensor says: ");
+  delay(500);
+  while (mySerial.available()){
+    response_byte = mySerial.read();
+    delay(10);
+    Serial.print(response_byte);
+  }
+  Serial.println();
+  Serial.println();
+  delay(500);
+  // Query K value
+  Serial.print("New K constant: ");
+  mySerial.print("K,?\r");
+  delay(500);
   while (mySerial.available()){
     response_byte = mySerial.read();
     Serial.print(response_byte);
   }
   Serial.println();
+  Serial.println();
   mySerial.end();
+  Serial.end();
 }
 
 void AtlasNW::set_Temperature(float T){
@@ -354,7 +378,7 @@ void AtlasNW::set_Temperature(float T){
    For temperature calibration of EC
    */
   char* _transmission;
-  uint8_t response_byte;
+  char response_byte;
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
   mySerial.print("T,");
@@ -377,7 +401,6 @@ void AtlasNW::calibrate(){
    Two-point calibration: low
    */
   Serial.begin(38400); // hard-coded for now -- and for some reason needed in every function
-  char* _transmission;
   char response_byte;
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
@@ -385,11 +408,13 @@ void AtlasNW::calibrate(){
   Serial.println();
   mySerial.print("Cal,clear\r");
   // Return the response
-  Serial.println("Sensor says: ");
+  Serial.print("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    delay(10);
     Serial.print(response_byte);
   }
+  Serial.println();
   Serial.println();
   Serial.println("Now dry the probe.");
   Serial.println("Enter any character and press <ENTER> when ready");
@@ -401,6 +426,16 @@ void AtlasNW::calibrate(){
   }
   Serial.println();
   mySerial.print("Cal,dry\r");
+  delay(3000); // time for calibration
+  // Return the response
+  Serial.print("Sensor says: ");
+  while (mySerial.available()){
+    response_byte = mySerial.read();
+    delay(10);
+    Serial.print(response_byte);
+  }
+  Serial.println();
+  Serial.println();
   Serial.println("Now place the probe in the low-conductivity solution.");
   Serial.println("Enter the E.C. value [uS] of the solution and press <ENTER>");
   Serial.println("to begin low-point calibration");
@@ -413,15 +448,18 @@ void AtlasNW::calibrate(){
     Serial.print(response_byte);
     mySerial.print(response_byte);
   }
-  mySerial.print("\r");
+  mySerial.print('\r');
+  delay(3000); // time for calibration
   Serial.println();
   Serial.println();
   // Return the response
-  Serial.println("Sensor says: ");
+  Serial.print("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    delay(10);
     Serial.print(response_byte);
   }
+  Serial.println();
   Serial.println();
   // Then dump any remaining input
   while (Serial.available()){
@@ -441,15 +479,18 @@ void AtlasNW::calibrate(){
     Serial.print(response_byte);
     mySerial.print(response_byte);
   }
-  mySerial.print("\r");
+  mySerial.print('\r');
+  delay(3000); // time for calibration
   Serial.println();
   Serial.println();
   // Return the response
-  Serial.println("Sensor says: ");
+  Serial.print("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    delay(10);
     Serial.print(response_byte);
   }
+  Serial.println();
   Serial.println();
   // Then dump any remaining input
   while (Serial.available()){
@@ -458,38 +499,57 @@ void AtlasNW::calibrate(){
   // Finally, close down communications
   mySerial.end();
   Serial.println("Calibration complete.");
+  Serial.end();
 }
 
-char* AtlasNW::read(bool _state){
+char* AtlasNW::read(){
   /*
    Read sensor
    */
-  char* _transmission;
-  char _tmpchar;
+  char response_byte;
   char* response;
+  int i;
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
-  mySerial.print("R\n");
-  // Record the response
-  // Dump response code
+  Serial.begin(38400);
+  delay(1000);
+  mySerial.print("R\r");
+  // Return the response code
+  Serial.print("Sensor says: ");
   while (mySerial.available()){
-    _tmpchar = mySerial.read();
+    response_byte = mySerial.read();
+    delay(10);
+    Serial.print(response_byte);
   }
+  Serial.println();
+  Serial.println();
   // But record actual response
   delay(1000);
-  int i = 0;
+  Serial.print("Sensor response: ");
+  i = 0;
   while (mySerial.available()){
-    _tmpchar = mySerial.read();
+    response_byte = mySerial.read();
     // Don't write the carriage return
-    while (_tmpchar != "\r"){
-      response[i] = mySerial.read();
+    Serial.print(response_byte);
+    if (response_byte != '\r'){
+      response[i] = response_byte;
       i++;
     }
-    //Dump any characters after carriage return
-    _tmpchar = mySerial.read();
+    else{
+      break;
+    }
+  }
+  Serial.println();
+  Serial.println();
+  //Dump any characters after carriage return
+  while (mySerial.available()){
+    response_byte = mySerial.read();
   }
   mySerial.end();
+  Serial.println(response);
   return response;
+  delay(20);
+  Serial.end();
 }
 
 //////////////////////

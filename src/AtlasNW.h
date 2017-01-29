@@ -40,6 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <Wire.h>
+#include <stdlib.h>
 
 class AtlasNW {
 
@@ -58,7 +59,7 @@ class AtlasNW {
     void AtlasNW::set_K_constant(float K);
     void AtlasNW::set_Temperature(float T);
     void AtlasNW::calibrate();
-    char* AtlasNW::read(bool _state);
+    char* AtlasNW::read();
     
 };
 
