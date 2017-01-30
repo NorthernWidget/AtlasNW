@@ -507,31 +507,28 @@ char* AtlasNW::read(){
    Read sensor
    */
   char response_byte;
-  char* response;
+  char* response[100];
   int i;
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
+  // Clear prior chit chat
+  mySerial.print('\r');
+  delay(50);
+  while (mySerial.available()){
+    response_byte = mySerial.read();
+  }
   Serial.begin(38400);
-  delay(1000);
   mySerial.print("R\r");
-  // Return the response code
+  // Sensor response
   Serial.print("Sensor says: ");
+  delay(1000);
+  i = 0;
   while (mySerial.available()){
     response_byte = mySerial.read();
     delay(10);
     Serial.print(response_byte);
-  }
-  Serial.println();
-  Serial.println();
-  // But record actual response
-  delay(1000);
-  Serial.print("Sensor response: ");
-  i = 0;
-  while (mySerial.available()){
-    response_byte = mySerial.read();
-    // Don't write the carriage return
-    Serial.print(response_byte);
-    if (response_byte != '\r'){
+    // Write only values
+    if (response_byte != '*'){
       response[i] = response_byte;
       i++;
     }
@@ -544,8 +541,13 @@ char* AtlasNW::read(){
   //Dump any characters after carriage return
   while (mySerial.available()){
     response_byte = mySerial.read();
+    Serial.print(response_byte);
   }
+  Serial.println();
+  Serial.println();
+
   mySerial.end();
+  Serial.print("Final recorded response: ");
   Serial.println(response);
   return response;
   delay(20);
