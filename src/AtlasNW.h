@@ -30,8 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // DEFINE SELF / INCLUDE GUARD //
 /////////////////////////////////
 
-#ifndef Logger_h
-#define Logger_h
+#ifndef AtlasNW_h
+#define AtlasNW_h
 
 ///////////////////////
 // INCLUDE LIBRARIES //
