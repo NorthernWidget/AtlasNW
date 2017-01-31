@@ -69,6 +69,10 @@ uint8_t softSerTX;
 // If I2C, save address
 uint8_t I2C_address;
 
+// Generic array to hold response
+char response[100];
+
+
 /////////////////////////
 // INSTANTIATE CLASSES //
 /////////////////////////
@@ -502,12 +506,11 @@ void AtlasNW::calibrate(){
   Serial.end();
 }
 
-char* AtlasNW::read(){
+void AtlasNW::read(){
   /*
    Read sensor
    */
   char response_byte;
-  char* response[100];
   int i;
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
@@ -549,7 +552,6 @@ char* AtlasNW::read(){
   mySerial.end();
   Serial.print("Final recorded response: ");
   Serial.println(response);
-  return response;
   delay(20);
   Serial.end();
 }

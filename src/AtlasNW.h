@@ -45,6 +45,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 class AtlasNW {
 
   public:
+    // Variables
+    // Generic array to hold response
+    char response[100];
+
     // Constructor
     AtlasNW(char* _measurement_type, char* _communications_type, uint8_t UART_number__I2C_address, uint32_t baudRate=9600);
     AtlasNW(char* _measurement_type, char* _communications_type, uint8_t _softSerRX, uint8_t _softSerTX, uint32_t _baudRate=9600);
@@ -59,7 +63,7 @@ class AtlasNW {
     void AtlasNW::set_K_constant(float K);
     void AtlasNW::set_Temperature(float T);
     void AtlasNW::calibrate();
-    char* AtlasNW::read();
+    void AtlasNW::read();
     
 };
 
