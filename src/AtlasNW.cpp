@@ -381,10 +381,13 @@ void AtlasNW::set_Temperature(float T){
   /*
    For temperature calibration of EC
    */
-  char* _transmission;
   char response_byte;
   SoftwareSerial mySerial(softSerRX, softSerTX);
   mySerial.begin(baudRate);
+  Serial.begin(38400);
+  delay(100);
+  Serial.print("Temperature value to be set to: ");
+  Serial.println(T);
   mySerial.print("T,");
   mySerial.print(T);
   mySerial.print("\r");
@@ -394,10 +397,26 @@ void AtlasNW::set_Temperature(float T){
   Serial.println("Sensor says: ");
   while (mySerial.available()){
     response_byte = mySerial.read();
+    delay(10);
     Serial.print(response_byte);
   }
   Serial.println();
   mySerial.end();
+  Serial.println();
+  Serial.println();
+  delay(500);
+  // Query K value
+  Serial.print("New T compensation value (degC): ");
+  mySerial.print("T,?\r");
+  delay(500);
+  while (mySerial.available()){
+    response_byte = mySerial.read();
+    Serial.print(response_byte);
+  }
+  Serial.println();
+  Serial.println();
+  mySerial.end();
+  Serial.end();
 }
 
 void AtlasNW::calibrate(){
